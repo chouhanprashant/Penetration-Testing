@@ -3,7 +3,10 @@
 ## 1. What is IDOR?
 Insecure Direct Object Reference (IDOR) is a security vulnerability that occurs when an attacker can manipulate input to access or modify resources that they shouldn't have access to. This typically happens when an application directly references internal objects, such as files, database records, or other resources, based on user input without adequate access control.
 
-For example, if a URL looks like `/profile?id=123`, an attacker might change `id=123` to `id=124` to access another user's profile. Proper authorization checks should ensure that only authorized users can access or modify their resources.
+### Example:
+For instance, if a URL looks like `/profile?id=123`, an attacker might change `id=123` to `id=124` to access another user's profile. Proper authorization checks should ensure that only authorized users can access or modify their resources.
+
+---
 
 ## 2. Step-by-Step Instructions for Testing IDOR
 
@@ -24,8 +27,7 @@ For example, if a URL looks like `/profile?id=123`, an attacker might change `id
    - **URL:** `https://example.com/order/view?order_id=1001`
    - Modify the parameter `order_id=1001` to `order_id=1002`, `1003`, etc., and check if you can access orders belonging to other users.
 
-5. **Common Pitfalls:**
-   - Sometimes the ID is obfuscated but still incrementable. For example, an order ID might be in a hashed or encoded format, but a predictable pattern might still be noticeable.
+---
 
 ### B. Testing via Cookies
 1. **Capture Cookies:**
@@ -38,10 +40,8 @@ For example, if a URL looks like `/profile?id=123`, an attacker might change `id
 
 3. **Verify the Impact:**
    - If modifying the cookie grants access to unauthorized data (e.g., access to another user’s account settings or resources), the system may be vulnerable to IDOR.
-   
-4. **Common Issues:**
-   - Insecure session management or lack of proper validation on cookies can lead to IDOR vulnerabilities.
-   - A simple change in the session or user ID can allow an attacker to impersonate another user or access their data.
+
+---
 
 ### C. Testing via Hidden Fields
 1. **Inspect Hidden Fields:**
@@ -56,8 +56,7 @@ For example, if a URL looks like `/profile?id=123`, an attacker might change `id
    - Try to perform actions such as updating another user's profile, deleting records, or modifying resources.
    - If you can modify or access unauthorized data by manipulating hidden fields, then the application is vulnerable to IDOR.
 
-4. **Common Issues:**
-   - Developers may not properly validate the hidden field values before processing them. This can expose user data to attackers.
+---
 
 ### D. Testing via API Endpoints
 1. **Identify API Endpoints:**
@@ -72,36 +71,39 @@ For example, if a URL looks like `/profile?id=123`, an attacker might change `id
    - If the response allows you to perform actions or return data from other users or objects, this indicates an IDOR vulnerability.
    - Check for HTTP status codes like `200 OK`, `404 Not Found`, or `403 Forbidden` to determine if access control is being enforced correctly.
 
-4. **Common Issues:**
-   - Improper access controls on APIs, such as missing checks for user authentication and authorization before accessing resources.
+---
 
 ## 3. Common Places to Find IDOR Vulnerabilities
 
-- **User Profiles:** URLs like `/profile?id=123`, `/account/settings?user_id=456`, etc., are prime candidates for IDOR vulnerabilities.
+- **User Profiles:** URLs like `/profile?id=123`, `/account/settings?user_id=456`, etc.
 - **E-commerce Platforms:** Resources such as orders, shopping carts, and invoices (e.g., `/order/view?id=123`, `/invoice?id=789`).
 - **File Download/Upload:** URLs or endpoints that expose file IDs (e.g., `/file/download?file_id=123`).
 - **API Endpoints:** API endpoints that expose user IDs or object references in the URL or request body (e.g., `/api/user/{id}`, `/api/order/{order_id}`).
 - **Admin Interfaces:** Look for administrative interfaces that may inadvertently expose data belonging to other users (e.g., `/admin/user/edit?user_id=123`).
 
+---
+
 ## 4. Practical Testing Tips
 
-### A. **Use Automation Tools:**
-   - **Burp Suite**: Intercept and modify requests in real-time, automate testing by setting up a Repeater or Intruder attack to change parameters in URLs, cookies, and hidden fields.
-   - **OWASP ZAP**: Similarly, use ZAP's active scanner and manual testing features to manipulate parameters and analyze responses.
+### A. Use Automation Tools
+- **Burp Suite:** Intercept and modify requests in real-time, automate testing by setting up a Repeater or Intruder attack to change parameters in URLs, cookies, and hidden fields.
+- **OWASP ZAP:** Similarly, use ZAP's active scanner and manual testing features to manipulate parameters and analyze responses.
 
-### B. **Test Across Multiple Roles:**
-   - Check for IDOR vulnerabilities by logging in as users with different roles (e.g., admin, regular user, guest) and attempt to access resources not meant for that role.
-   - Often, IDOR is more easily exploited by users with limited access because they have fewer objects to interact with.
+### B. Test Across Multiple Roles
+- Check for IDOR vulnerabilities by logging in as users with different roles (e.g., admin, regular user, guest) and attempt to access resources not meant for that role.
+- Often, IDOR is more easily exploited by users with limited access because they have fewer objects to interact with.
 
-### C. **Handle Blind IDOR:**
-   - **Blind IDOR**: Sometimes, you may not see a direct response revealing unauthorized data. Look for indirect indicators like HTTP response time differences or error messages (e.g., `403 Forbidden` when accessing a resource you shouldn’t).
-   - Use a proxy to track changes in response times when modifying object IDs. Anomalies can hint at IDOR vulnerabilities.
+### C. Handle Blind IDOR
+- **Blind IDOR:** Sometimes, you may not see a direct response revealing unauthorized data. Look for indirect indicators like HTTP response time differences or error messages (e.g., `403 Forbidden` when accessing a resource you shouldn’t).
+- Use a proxy to track changes in response times when modifying object IDs. Anomalies can hint at IDOR vulnerabilities.
 
-### D. **Check for Session Management Flaws:**
-   - If the application relies heavily on session cookies, check if session IDs or user IDs are predictable or can be modified to impersonate another user.
+### D. Check for Session Management Flaws
+- If the application relies heavily on session cookies, check if session IDs or user IDs are predictable or can be modified to impersonate another user.
 
-### E. **Use Guessing for Sequential IDs:**
-   - If object IDs are predictable or sequential, a simple brute-force approach could be used to find other valid IDs. This method is particularly useful for testing APIs, URLs, or files with incremental object references.
+### E. Use Guessing for Sequential IDs
+- If object IDs are predictable or sequential, a simple brute-force approach could be used to find other valid IDs. This method is particularly useful for testing APIs, URLs, or files with incremental object references.
+
+---
 
 ## 5. Quick Testing Checklist
 
@@ -115,3 +117,6 @@ For example, if a URL looks like `/profile?id=123`, an attacker might change `id
 - [ ] **Check API Responses:** Ensure that API responses properly filter out unauthorized users from accessing or modifying data.
 
 **Note:** Always ensure that you have explicit permission to perform security testing on the target systems. Unauthorized testing can have legal consequences.
+
+---
+
